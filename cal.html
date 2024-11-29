@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+jQuery(document).ready(function ($) {
+  function parseNumberInput(id) {
+    try {
+      return parseFloat('0' + $("#" + id).val().replace(/[^\d.]/g, ''));
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  var inputSector;
+
+  var sectorArray = {
+    'ma': 'Major Airlines',
+    'ip': 'Into-Plane Service Provider',
+    'tf': 'Supplier'
+  }
+
+  var roleArray = {
+    'ma': [
+        { "id": "ma-df",
+          "role": "Director of Fuels",
+          'inputs': [
+              { 'title': 'Time saved from running fueling tickets',
+                'id': 'A',
+                'default': 5,
+                'min': 5,
+                'max': 10,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              },
+              { 'title': '# of flights per day',
+                'id': 'B',
+                'default': 300,
+                'min': 1,
+                'max': 6000,
+                'step': 1,
+                'format': '0,0',
+                'prefix': '',
+                'postfix': ''
+              },
+              { 'title': 'Average cost of delay per minute',
+                'id': 'C',
+                'default': 65.43,
+                'min': 0,
+                'max': 100,
+                'step': 0.01,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': '# of minutes for filling out fueling tickets',
+                'id': 'A2',
+                'default': 15,
+                'min': 1,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              },
+              { 'title': 'Time saved from minimizing ramp mistakes',
+                'id': 'D',
+                'default': 5,
+                'min': 0,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              },
+              {
+                'id': 'E2',
+                'title': '# of saved paper-based tickets per flight',
+                'default': 1.25,
+                'min': 1,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              },
+              {
+                'id': 'F2',
+                'title': 'Cost per tickets',
+                'default': 0.60,
+                'min': 0.5,
+                'max': 1.5,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }
+              ],
+          'outputs': [
+              { 'title': 'Total Value Added to Your Bottomline',
+                'subtitle': '',
+                'formula': '{A} * {B} * {C} * 365 + ({D} - {A2}) * {B} * {C} + {E2} * {B} * {F2} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Delay',
+                'formula': '{A} * {B} * {C} * 365 + ({D} - {A2}) * {B} * {C}',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Operating Cost',
+                'formula': '{E2} * {B} * {F2} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              }
+              ]
+        },
+        { 'id': 'ma-cp',
+          'role': 'Chief Pilot',
+          'inputs': [
+              { 'title': '# of flights per day',
+                'id': 'A',
+                'default': 300,
+                'min': 1,
+                'max': 6000,
+                'step': 1,
+                'format': '0,0',
+                'prefix': '',
+                'postfix': ''
+              },
+              { 'title': 'Average cost of delay per minute',
+                'id': 'B',
+                'default': 65.43,
+                'min': 0,
+                'max': 100,
+                'step': 0.01,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': '# of minutes for handling fueling tickets',
+                'id': 'C',
+                'default': 7,
+                'min': 1,
+                'max': 10,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              },
+              { 'title': '# of minutes for fixing "bad" fueling tickets',
+                'id': 'D',
+                'default': 10,
+                'min': 0,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              },
+              { 'title': '% of "bad tickets" in a year',
+                'id': 'E',
+                'default': 2,
+                'min': 0.5,
+                'max': 5,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }
+              ],
+          'outputs': [
+              { 'title': 'Total Value Added to Your Bottomline',
+                'subtitle': 'Less Delay',
+                'formula': '{A} * {B} * {C} * 365 + {D} * {E} / 100 * {B} * {C} * 360',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              }
+              ]
+        },
+        { "id": "ma-do",
+          "role": "Director of Operations/Safety",
+          'inputs': [
+              {
+                'id': 'B',
+                'title': '# of flights per day',
+                'default': 300,
+                'min': 1,
+                'max': 6000,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'C',
+                'title': 'Average cost of delay per minute',
+                'default': 65.43,
+                'min': 0,
+                'max': 100,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'A',
+                'title': 'Minutes relating to overfueling delay',
+                'default': 3,
+                'min': 1,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'D',
+                'title': '% of chance of Severe overfueling that needs to make adjustment',
+                'default': 1,
+                'min': 0.5,
+                'max': 2,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'Q',
+                'title': 'Average delay (severe overfueling)',
+                'default': 12,
+                'min': 0,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              }, 
+              {
+                'id': 'E',
+                'title': 'Fuel Daily Usage by Gallon',
+                'default': 260000,
+                'min': 1000,
+                'max': 2000000,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'F',
+                'title': 'Your fuel cost/gallon',
+                'default': 2.50,
+                'min': 1,
+                'max': 8,
+                'step': 0.01,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }, 
+              {
+                'id': 'H',
+                'title': 'Borrowing cost',
+                'default': 5,
+                'min': 0,
+                'max': 20,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              {
+                'id': 'G',
+                'title': 'Reduce buffer inventory by days',
+                'default': 2,
+                'min': 0.5,
+                'max': 5,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'E2',
+                'title': '# of paper-based tickets saved per flight',
+                'default': 1.25,
+                'min': 1,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'F2',
+                'title': 'Cost per tickets',
+                'default': 0.60,
+                'min': 0.5,
+                'max': 1.5,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }, 
+              {
+                'id': 'A2',
+                'title': 'Average overfuel by gallon per flight',
+                'default': 6,
+                'min': 0,
+                'max': 100,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'D2',
+                'title': '% of chance of overfueling',
+                'default': 75,
+                'min': 25,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              {
+                'id': 'U',
+                'title': 'Average delay (visibility to ramp personnel related)',
+                'default': 12,
+                'min': 0,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              }, 
+              {
+                'id': 'B2',
+                'title': '% of flights delay (visibility to ramp personnel related)',
+                'default': 5,
+                'min': 1,
+                'max': 20,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              {
+                'id': 'C3',
+                'title': 'Average length of delay (minutes)',
+                'default': 12,
+                'min': 1,
+                'max': 60,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }
+              ],
+          'outputs': [
+              { 'title': 'Total Value Added to Your Bottomline',
+                'subtitle': '',
+                'formula': '{A} * {B} * {C} * 365 + {B2} / 100 * {B} * {U} * 365 + {D} / 100 * {B} * 365 * {C} * {Q} + {A2} * {B} + {B} * {D2} / 100 * 365 + {E} * {H} * {G} * 365 * {F} + {E2} * {B} * 365 * {F2}',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Delay',
+                'formula': '{A} * {B} * {C} * 365 + {B2} / 100 * {B} * {U} * 365 + {D} / 100 * {B} * 365 * {C} * {Q}',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Overfueling Cost',
+                'formula': '{A2} * {B} + {B} * {D2} / 100 * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Fuel Inventory',
+                'formula': '{E} * {H} * {G} * 365 * {F}',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Paper Fuel Tickets',
+                'formula': '{E2} * {B} * 365 * {F2}',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              }
+              ]
+        }
+        ],
+    "ip": [
+        { "id": "ip-do",
+          "role": "Global Director for All Airports",
+          'inputs': [
+              {
+                'id': 'B1',
+                'title': '# of flights per day',
+                'default': 300,
+                'min': 1,
+                'max': 6000,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'E1',
+                'title': '# of paper-based tickets per flight',
+                'default': 1.25,
+                'min': 1,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'F1',
+                'title': 'Cost per tickets',
+                'default': 0.60,
+                'min': 0.5,
+                'max': 1.5,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }, 
+              {
+                'id': 'A2',
+                'title': 'Fueling time saved',
+                'default': 5,
+                'min': 5,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              }, 
+              {
+                'id': 'C2',
+                'title': 'Hourly rate for Fueler',
+                'default': 20,
+                'min': 10,
+                'max': 100,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }
+          ],
+          'outputs': [
+              { 'title': 'Total Value Added to Your Bottomline',
+                'subtitle': '',
+                'formula': '{E1} * {B1} * {F1} * 365 + {A2} * {B1} * {C2} / 60 * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Reduce Cost',
+                'formula': '{E1} * {B1} * {F1} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Delay',
+                'formula': '{A2} * {B1} * {C2} / 60 * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              }
+          ]
+        },
+        { "id": "ip-md",
+          "role": "General Manager of Airport",
+          'inputs': [
+              {
+                'id': 'A1',
+                'title': '# of Minutes to run out fueling ticket per flight',
+                'default': 10,
+                'min': 5,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              }, 
+              {
+                'id': 'B1',
+                'title': '# of flights per day',
+                'default': 300,
+                'min': 1,
+                'max': 6000,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'C1',
+                'title': 'Average cost of resources per hour',
+                'default': 15,
+                'min': 10,
+                'max': 100,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              },
+              {
+                'id': 'D1',
+                'title': 'Time saved from running fueling ticket',
+                'default': 5,
+                'min': 0,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              }, 
+              {
+                'id': 'A2',
+                'title': '% of chance of aircrafts with MEL or INOP equip delay',
+                'default': 10,
+                'min': 0,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              {
+                'id': 'C2',
+                'title': 'Average length of delay (minutes)',
+                'default': 12,
+                'min': 1,
+                'max': 60,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'D2',
+                'title': 'Average cost of delay per minute',
+                'default': 65.43,
+                'min': 0,
+                'max': 100,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }
+          ],
+          'outputs': [
+              { 'title': 'Total Value Added to Your Bottomline',
+                'subtitle': '',
+                'formula': '({A1} - {D1}) * {B1} * {C2} / 60 *365 + {A2} / 100 * {B1} * {C2} * {D2} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Operation Cost',
+                'formula': '({A1} - {D1}) * {B1} * {C2} / 60 *365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Delay',
+                'formula': '{A2} / 100 * {B1} * {C2} * {D2} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              }
+        ]
+        }
+        ],
+    "tf": [
+        { "id": "tf-do",
+          "role": "Global Director for All Airports",
+          'inputs': [
+              {
+                'id': 'B1',
+                'title': '# of flights per day',
+                'default': 300,
+                'min': 1,
+                'max': 6000,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'A1',
+                'title': '% of mistake chances due to manual ticketing',
+                'default': 10,
+                'min': 0,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              { 'title': '# of minutes for filling out fueling tickets',
+                'id': 'C1',
+                'default': 15,
+                'min': 1,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              },
+              { 'title': 'Average cost of delay per minute',
+                'id': 'D1',
+                'default': 65.43,
+                'min': 0,
+                'max': 100,
+                'step': 0.01,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': '# of minutes for delivering fueling tickets',
+                'id': 'C2',
+                'default': 12,
+                'min': 1,
+                'max': 20,
+                'step': 1,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': ' min'
+              },
+              {
+                'id': 'A3',
+                'title': 'Average consumption by gallon per flight',
+                'default': 5000,
+                'min': 200,
+                'max': 70000,
+                'step': 100,
+                'format': '0,0',
+                'prefix': '',
+                'postfix': ' gal'
+              }, 
+              {
+                'id': 'C3',
+                'title': 'Average cost of fuel/gallon',
+                'default': 2.5,
+                'min': 1.5,
+                'max': 4,
+                'step': 0.01,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }, 
+              {
+                'id': 'D3',
+                'title': '% of buffer inventory required due to lack of integration settlement',
+                'default': 15,
+                'min': 0,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }
+          ],
+          'outputs': [
+              { 'title': 'Total Value Added to Your Bottomline',
+                'subtitle': '',
+                'formula': '{A1} * {B1} * {C1} * {D1} * 365 + {A1} * {C2} * {D1} * 365 + {A3} * {B1} * {C3} * {D3} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Less Delay',
+                'formula': '{A1} * {B1} * {C1} * {D1} * 365 + {A1} * {C2} * {D1} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              },
+              { 'title': 'Reduce Buffer Inventory Cost',
+                'formula': '{A3} * {B1} * {C3} * {D3} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              }
+          ]
+        },
+        { "id": "tf-md",
+          "role": "General Manager of Airport",
+          'inputs': [
+              {
+                'id': 'A1',
+                'title': 'Average overfuel by gallon per flight',
+                'default': 6,
+                'min': 0,
+                'max': 100,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'B1',
+                'title': '# of flights per day',
+                'default': 300,
+                'min': 1,
+                'max': 6000,
+                'step': 1,
+                'format': '0,0[.]00',
+                'prefix': '',
+                'postfix': ''
+              }, 
+              {
+                'id': 'C1',
+                'title': 'Average cost of fuel/gallon',
+                'default': 2.5,
+                'min': 1.5,
+                'max': 4,
+                'step': 0.01,
+                'format': '0,0[.]00',
+                'prefix': '$',
+                'postfix': ''
+              }, 
+              {
+                'id': 'A2',
+                'title': 'Average consumption by gallon per flight',
+                'default': 5000,
+                'min': 200,
+                'max': 70000,
+                'step': 100,
+                'format': '0,0',
+                'prefix': '',
+                'postfix': ' gal'
+              }, 
+              {
+                'id': 'D1',
+                'title': '% of percent of flights overfueled due to lack of real time visibility',
+                'default': 75,
+                'min': 25,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              {
+                'id': 'D2',
+                'title': '% of buffer inventory required due to lack of real time data',
+                'default': 15,
+                'min': 0,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              {
+                'id': 'D3',
+                'title': '% of buffer inventory required due to lack of data accuracy',
+                'default': 15,
+                'min': 0,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }, 
+              {
+                'id': 'D4',
+                'title': ' % of buffer inventory required due to lack of connection to airlines',
+                'default': 15,
+                'min': 0,
+                'max': 90,
+                'step': 0.5,
+                'format': '0,0[.]0',
+                'prefix': '',
+                'postfix': '%'
+              }
+          ],
+          'outputs': [
+              { 'title': 'Total Value Added to Your Bottomline',
+                'subtitle': 'Reduce Buffer Inventory Cost',
+                'formula': '{A1} * {B1} * {C1} * {D1} * 365 + {A2} * {B1} * {C1} * {D2} * 365 + {A2} * {B1} * {C1} * {D3} * 365 + {A2} * {B1} * {C1} * {D4} * 365',
+                'format': '0,0',
+                'prefix': '$',
+                'postfix': ''
+              }
+          ]
+        }
+        ]
+  };
+
+  var sliderTemplate = '<div class="col-sm-6 panel-body">';
+  sliderTemplate = sliderTemplate + '  <h4 class="slider-heading">{{ title }}</h4>';
+  sliderTemplate = sliderTemplate + '  <div class="row slider-row">';
+  sliderTemplate = sliderTemplate + '    <div class="col-xs-6"><div id="slider-{{ i }}"></div></div>';
+  sliderTemplate = sliderTemplate + '    <div class="col-xs-4 slider-value" id="input-{{ i }}"></div>';
+  sliderTemplate = sliderTemplate + '    <div class="col-xs-1 slider-info">';
+  sliderTemplate = sliderTemplate + '      <a tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="left" title="{{ title }}" data-content="{{ help }}">';
+  sliderTemplate = sliderTemplate + '        <i class="fa fa-info-circle text-info"></i>';
+  sliderTemplate = sliderTemplate + '      </a>';
+  sliderTemplate = sliderTemplate + '    </div>';
+  sliderTemplate = sliderTemplate + '  </div>';
+  sliderTemplate = sliderTemplate + '</div>';
+
+  var resultTemplate = '<div class="col-md-{{ width }}">';
+  resultTemplate = resultTemplate + '  <div id="calc-adv-result-{{ i }}" class="calc-adv-result"></div>';
+  resultTemplate = resultTemplate + '  <div id="calc-adv-result-title-{{ i }}" class="text-center text-muted"></div>';
+  resultTemplate = resultTemplate + '</div>';
+
+  var A, results, reportData;
+
+  function updateRoleSelect() {
+    inputSector = $("#select-sector").val();
+    var selectRole = $("#select-role");
+    selectRole.empty();
+    var roles = roleArray[inputSector];
+    for (var i = 0; i < roles.length; i++) {
+      var role = roles[i];
+      selectRole.append('<option value="' + role["id"] + '">' + role["role"] + '</option>');
+    }
+  }
+
+  $("#select-sector").on("change", updateRoleSelect);
+  updateRoleSelect();
+
+  function recalculateStep2() {
+    findSelectedRole();
+
+    inputValues = {};
+    reportData = {};
+    for (var i = 0; i < selectedRole['inputs'].length; i++) {
+      var input = selectedRole['inputs'][i];
+      inputValues[input['id']] = $("#slider-" + i).data("ionRangeSlider").result.from;
+      $("#input-" + i).text(input['prefix'] + numeral(inputValues[input['id']]).format(input['format']) + input['postfix']);
+
+      reportData["input-title-" + i] = input['title'];
+      reportData["input-" + i] = $("#input-" + i).text();
+    }
+
+    results = [];
+    var colWidth = selectedRole['outputs'].length < 2 ? 12 : 6; // 12 / (selectedRole['outputs'].length - 1);
+    $("#result-container").empty();
+    for (var i = 0; i < selectedRole['outputs'].length; i++) {
+      var output = selectedRole['outputs'][i];
+      if (i > 0) {
+        var html = resultTemplate;
+        html = html.replace(/{{ width }}/g, colWidth.toString());
+        html = html.replace(/{{ i }}/g, i.toString());
+        $("#result-container").append(html);
+
+      }
+      $("#calc-adv-result-title-" + i).text(output['title']);
+      $("#calc-adv-result-subtitle-" + i).text(output['subtitle']);
+
+      var outputFormula = output['formula'].replace(/{/g, 'inputValues["').replace(/}/g, '"]');
+      $("#calc-adv-result-" + i).text(output['prefix'] + numeral(eval(outputFormula)).format(output['format']) + output['postfix']);
+
+      reportData["calc-adv-result-title-" + i] = $("#calc-adv-result-title-" + i).text();
+      reportData["calc-adv-result-subtitle-" + i] = $("#calc-adv-result-subtitle-" + i).text();
+      reportData["calc-adv-result-" + i] = $("#calc-adv-result-" + i).text();
+    }
+
+
+  }
+
+  function step1() {
+    $("#calc-step-2").fadeOut(10);
+    $("#calc-step-1").fadeIn(250);
+  }
+
+
+  function findSelectedRole() {
+    var roleId = $("#select-role").val();
+    for (var sector in roleArray) {
+      for (var i = 0; i < roleArray[sector].length; i++) {
+        var role = roleArray[sector][i];
+        if (role['id'] == roleId) {
+          selectedRole = role;
+        }
+      }
+    }
+  }
+
+  function initSliders() {
+    findSelectedRole();
+    $("#slider-container").empty();
+    for (var i = 0; i < selectedRole['inputs'].length; i++) {
+      var input = selectedRole['inputs'][i];
+      var helpText = (input['help'] ? input['help'] : input['title']).replace(/\"/g, '&quot;');
+      var html = sliderTemplate;
+      html = html.replace(/{{ title }}/g, input['title'].replace(/\"/g, '&quot;'));
+      html = html.replace(/{{ i }}/g, i.toString());
+      html = html.replace(/{{ help }}/g, helpText);
+      $("#slider-container").append(html);
+
+      $("#slider-" + i).ionRangeSlider({
+        min: input['min'],
+        max: input['max'],
+        from: input['default'],
+        step: input['step'],
+        hide_min_max: true,
+        hide_from_to: true,
+        grid: false,
+        onChange: recalculateStep2
+      });
+    }
+    $('[data-toggle="popover"]').popover();
+    recalculateStep2();
+
+  }
+
+  function step2() {
+    initSliders();
+    //recalculateStep2();
+
+    $("#calc-step-1").fadeOut(10);
+    $("#calc-step-2").fadeIn(250);
+  }
+
+  function resetForm() {
+    findSelectedRole();
+    for (var i = 0; i < selectedRole['inputs'].length; i++) {
+      $("#slider-" + i).data("ionRangeSlider").reset();
+    }
+    recalculateStep2();
+  }
+
+  $("#btn-basic-result").on("click", step2);
+  $("#btn-advanced-back").on("click", step1);
+  $("#btn-advanced-reset").on("click", resetForm);
+
+  $("#form-advanced-email").on("submit", function () {
+    reportData['action'] = 'calc_advanced_pdf_mail';
+    reportData['name'] = $("#report-name").val();
+    reportData['email'] = $("#report-email").val();
+    reportData['sector'] = sectorArray[inputSector];
+    reportData['role'] = selectedRole['role'];
+    /*
+    jQuery.post('send-advanced.php', reportData, function () {
+      vex.dialog.alert({ unsafeMessage: '<h4>QT Technologies</h3>The results has been successfully sent to ' + $("#report-email").val() });
+    });
+     */
+    jQuery.post('/wp-admin/admin-ajax.php', reportData, function(response) {
+      if (response) {
+        vex.dialog.alert({ unsafeMessage: '<h4>QT Technologies</h3>The results could not be sent to ' + reportData['email'] + '. Please check the email address and try again.'});
+      } else {
+        vex.dialog.alert({ unsafeMessage: '<h4>QT Technologies</h3>The results have been successfully sent to ' + reportData['email'] });
+      }
+    });
+
+    $('#email-modal').modal("hide");
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+    return false;
+  })
+});
+</script>
+</head>
+<body>
+	<div id="calc-step-1" style="display: block;">
+	<h1 class="text-center">Advanced Calculator</h1>
+	<h3 class="text-center">See how much more you could make with our Value Calculator.</h3>
+
+	<div class="row">
+		  <div class="col-sm-6 text-center panel-body">
+			<i class="fa fa-paper-plane-o fa-3x text-info"></i>
+			<h4>Select your sector</h4>
+			<select id="select-sector" class="form-control input-lg">
+			  <option value="ma">Major Airlines</option>
+			  <option value="ip">Into-Plane Service Provider</option>
+			  <option value="tf">Supplier</option>
+			</select>
+		  </div>
+
+		  <div class="col-sm-6 text-center panel-body">
+			<i class="fa fa-user-o fa-3x text-warning"></i>
+			<h4>Select your role</h4>
+			<select id="select-role" class="form-control input-lg"><option value="ma-df">Director of Fuels</option><option value="ma-cp">Chief Pilot</option><option value="ma-do">Director of Operations/Safety</option></select>
+		  </div>
+
+	</div>
+
+	<div class="row panel-body">
+	  <div class="col-xs-12 text-right">
+		<button id="btn-basic-reset" type="reset" class="btn btn-lg btn-default">
+		  <i class="fa fa-refresh"></i> Reset
+		</button>
+
+		<button id="btn-basic-result" type="button" class="btn btn-lg btn-success">
+		  Next Step <i class="fa fa-chevron-circle-right"></i>
+		</button>
+	  </div>
+	</div>
+</div>
+</body>
+</html>
